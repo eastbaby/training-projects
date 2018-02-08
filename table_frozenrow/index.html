@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>table frozen a row</title>
+    <meta name="viewport" content="width=device-width, intial-scale=4, maximun-scale=1" />
+    <style type="text/css">
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        table {
+            margin: 0 50px;
+            border-collapse: collapse;
+        }
+
+        table td {
+            text-align: center;
+            border: 1px solid black;
+            width: 100px;
+            height: 50px;
+        }
+
+        #basictable thead,
+        #frozetable {
+            background: lightgray;
+        }
+
+        #frozetable{
+            display: none;
+            position: fixed;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <table id="frozetable">
+        <tr>
+            <td>表头</td>
+            <td>表头</td>
+            <td>表头</td>
+            <td>表头</td>
+        </tr>
+    </table>
+    <table id="basictable">
+        <thead>
+            <tr>
+                <td>表头</td>
+                <td>表头</td>
+                <td>表头</td>
+                <td>表头</td>
+            </tr>
+        </thead>
+        <tbody>
+
+            <tr>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>2</td>
+                <td>2</td>
+                <td>2</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>3</td>
+                <td>3</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>4</td>
+                <td>4</td>
+                <td>4</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>5</td>
+                <td>5</td>
+                <td>5</td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>6</td>
+                <td>6</td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>7</td>
+                <td>7</td>
+                <td>7</td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>8</td>
+                <td>8</td>
+                <td>8</td>
+            </tr>
+        </tbody>
+
+    </table>
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <br> 我
+    <br> 是
+    <br> 一
+    <br> 些
+    <br> 内
+    <br> 容
+    <script type="text/javascript">
+    var basictb = document.getElementById("basictable");
+    var frozetb = document.getElementById("frozetable");
+    //onscroll 只能执行在包围框上面，这里是整个页面
+    window.onscroll = document.onscroll = function(){
+        //console.log(document.documentElement.scrollTop);
+        if(basictb.offsetTop <= document.documentElement.scrollTop){
+           //触顶，让frozetable出现
+            frozetb.style.display = "block";
+            if(basictb.offsetTop + basictb.offsetHeight <= document.documentElement.scrollTop){
+                frozetb.style.display = "none";
+            }
+        }else{
+            frozetb.style.display = "none";
+        }
+    }
+
+    </script>
+</body>
+
+</html>
