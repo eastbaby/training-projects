@@ -89,7 +89,7 @@
             line-height: 1.5em;
         }
 
-        .photo_center {
+        .photo-center {
             left: 50%;
             top: 50%;
             margin: -160px 0 0 -130px;
@@ -129,13 +129,13 @@
         }
 
         .photo-front .photo-wrap {
-            /* .photo_front 是添加到 div.photo 的类 */
+            /* .photo-front 是添加到 div.photo 的类 */
             transform: rotateY(0deg);
 
         }
 
         .photo-back .photo-wrap {
-            /* .photo_back 是添加到 div.photo 的类*/
+            /* .photo-back 是添加到 div.photo 的类*/
             transform: rotateY(180deg);
 
         }
@@ -147,7 +147,7 @@
     <!-- 输出所有的海报,模版替换 -->
     <div class="wrap" id="wrap">
         <!-- photo-center为选中样式 -->
-        <div class="photo photo-front" id="photo_{{index}}" onclick="turn()">
+        <div class="photo photo-front" id="photo-{{index}}" onclick="turn(this)">
             <div class="photo-wrap">
                 <div class="side side-front">
                     <p class="image">
@@ -167,17 +167,10 @@
             var min = Math.min(range[0], range[1]);
             var max = Math.max(range[0], range[1]);
             var diff = max - min;
-            /*
-             *例如 [1, 20]，则 diff = 19 --> 0 <= Math.round(Math.random() * diff) <= 19
-             *然后再加上最小值，即可随机生成 1 ~ 20 之间的任意数，如果使用 Math.floor() 则
-             *生成 1 ~ 19 之间的任意数，使用 Math.ceil() 则生成 2 ~ 20 之间的任意数
-             */
             var number = Math.round(Math.random() * diff) + min;
             return number;
         }
-        function turn() {
-            console.log(event.currentTarget, "heihei")
-
+        function turn(el) {
             let cls = el.className;
             if (/photo-front/.test(cls)) {
                 cls = cls.replace("photo-front", "photo-back")
@@ -197,16 +190,73 @@
                 var _html = template.replace('{{index}}', i + 1).replace('{{img}}', data[i].img).replace('{{caption}}', data[i].caption).replace('{{desc}}', data[i].desc);
                 html.push(_html);
             }
-
-
             document.querySelector('#wrap').innerHTML = html.join('');
             rsort(random([1, data.length]));
         }
         addPhotos();
 
+        // 6.计算左右分区的范围，使其他海报的显示不会超出此范围
+        function range() {
+            /*{left: {x: [左侧区域 left 的最小值, 左侧区域 left 的最大值], y: [左侧区域 top 的最小值, 左侧区域 top 的最大值]}, 
+             *right: {x: [右侧区域 left 的最小值, 右侧区域 left 的最大值], y: [右侧区域 top 的最小值, 右侧区域 top 的最大值]}}
+             */
+            var range = {
+                left: {
+                    x: [],
+                    y: []
+                },
+                right: {
+                    x: [],
+                    y: []
+                }
+            };
+            //获取最外围容器的宽度和高度
+            var wrap = {
+                width: document.querySelector('#wrap').clientWidth,
+                height: document.querySelector('#wrap').clientHeight
+            };
+            //获取每一张海报的宽度和高度
+            var photo = {
+                width: document.querySelector('.photo').clientWidth,
+                height: document.querySelector('.photo').clientHeight
+            };
+          
+            range.left.x = [0 - photo.width , wrap.width / 2 - photo.width];
+            range.left.y = [0 - photo.height , wrap.height ];
+            range.right.x = [wrap.width / 2 , wrap.width];
+            range.right.y = range.left.y;
+
+            return range;
+        }
         function rsort(n) {
-            var photo_center = document.querySelector('#photo_' + n);
-            photo_center.className += ' photo_center';
+            var _photo = document.querySelectorAll('.photo');
+            var photos = Array.prototype.slice.call(_photo);
+            photos.forEach(el => {
+                el.className = 'photo photo-front';
+                el.style.left = '';
+                el.style.top = '';
+            });
+            photo_center = photos.splice(n - 1, 1);//把photo_center从数组里删掉
+            var photo_center = document.querySelector('#photo-' + n);
+            photo_center.className += ' photo-center';
+
+            // 把剩下的海报分为左右两部分
+            var photos_left = photos.splice(0, Math.ceil(photos.length / 2));
+            var photos_right = photos;
+            var ranges = range();
+            // 对左右区域的海报位置进行随机赋值
+            for (var j = 0; j < photos_left.length; j++) {
+                var photo = photos_left[j];
+                photo.style.left = random(ranges.left.x) + 'px';
+                photo.style.top = random(ranges.left.y) + 'px';
+                photo.style['transform'] = photo.style['-webkit-transform'] = 'rotate(' + random([-150, 150]) + 'deg) scale(1)';
+            }
+            for (var s = 0; s < photos_right.length; s++) {
+                var photo = photos_right[s];
+                photo.style.left = random(ranges.right.x) + 'px';
+                photo.style.top = random(ranges.right.y) + 'px';
+                photo.style['transform'] = photo.style['-webkit-transform'] = 'rotate(' + random([-150, 150]) + 'deg) scale(1)';
+            }
         }
     </script>
 </body>
