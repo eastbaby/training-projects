@@ -44,8 +44,16 @@
             height: 320px;
             z-index: 1;
             box-shadow: 0 0 1px rgba(0, 0, 0, .01);
-
-
+            transition: all 2s;
+            -webkit-transition: all 2s;
+            -moz-transition: all 2s;
+            -o-transition: all 2s;
+            /*初始化时每张海报都居中显示，然后通过 JavaScript 设置除中间海报外的随机位置，会产生从中间发散的效果时候时候，
+                 *切换中间海报的时候，由于中间海报瞬间失去了 .photo_center 的样式，但仍然还有 .photo 的样式，再被设置随机样式后会有平滑的过渡效果
+                 */
+            left: 50%;
+            top: 50%;
+            margin: -160px 0 0 -130px;
         }
 
         .photo .side {
@@ -93,7 +101,7 @@
             left: 50%;
             top: 50%;
             margin: -160px 0 0 -130px;
-            z-index: 999;
+            z-index: 3;
         }
 
         .photo-wrap {
@@ -104,11 +112,11 @@
             -webkit-transform-style: preserve-3d;
             transition: all .6s ease-in-out;
             -webkit-transition: all .6s ease-in-out;
-            /* Safari 和 Chrome */
             -moz-transition: all .5s;
-            /* Firefox 4 */
             -o-transition: all .5s;
-            /* Opera */
+            /* 这里调整origin是为了配合.photo-back .photo-wrap的translate平移制造更好的动画 */
+            transform-origin: left center;
+            -webkit-transform-origin: left center;
         }
 
         .photo-wrap .side-front {
@@ -119,8 +127,7 @@
 
         .photo-wrap .side-back {
             transform: rotateY(180deg);
-            -webkit-transform: rotateY(180deg);
-
+            -webkit-transform: rotateY(180deg)
         }
 
         .photo-wrap .side {
@@ -131,20 +138,75 @@
         .photo-front .photo-wrap {
             /* .photo-front 是添加到 div.photo 的类 */
             transform: rotateY(0deg);
-
         }
 
         .photo-back .photo-wrap {
             /* .photo-back 是添加到 div.photo 的类*/
-            transform: rotateY(180deg);
+            transform: translateX(260px) rotateY(180deg);
+        }
 
+        .nav {
+            position: absolute;
+            width: 80%;
+            left: 10%;
+            height: 30px;
+            line-height: 30px;
+            bottom: 20px;
+            z-index: 3;
+            text-align: center;
+        }
+
+        /* 普通样式 */
+
+        .nav .i {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background-color: #aaa;
+            text-align: center;
+            border-radius: 50px;
+            transform: scale(.5);
+            -webkit-transform: scale(.5);
+            -moz-transform: scale(.5);
+            -o-transform: scale(.5);
+            -ms-transform: scale(.5);
+
+            transition: all .5s;
+            -webkit-transition: all .5s;
+            -moz-transition: all .5s;
+            -o-transition: all .5s;
+        }
+
+        /* 选中样式 */
+
+        .nav .i-current {
+            transform: scale(1);
+            -webkit-transform: scale(1);
+            -moz-transform: scale(1);
+            -o-transform: scale(1);
+            -ms-transform: scale(1);
+        }
+
+        /* 背面样式 */
+
+        .nav .i-back {
+            background-color: #555;
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            -moz-transform: rotateY(180deg);
+            -o-transform: rotateY(180deg);
+            -ms-transform: rotateY(180deg);
         }
     </style>
     <script type="text/javascript" src="images/data.js"></script>
 </head>
 
 <body onselectstart="return false;" style="-moz-user-select:none;">
-    <!-- 输出所有的海报,模版替换 -->
+    <!-- 方法：输出所有的海报,模版替换 
+        这种方法可以实现输出所有海报，但是在刷新页面的一瞬间，文字部分会显示 {{}} 关键字没有被替换之前的样子，同时获取{{img}}资源会报错。
+        因此尽量修改为纯 JavaScript 写入的方式
+    -->
     <div class="wrap" id="wrap">
         <!-- photo-center为选中样式 -->
         <div class="photo photo-front" id="photo-{{index}}" onclick="turn(this)">
@@ -172,10 +234,16 @@
         }
         function turn(el) {
             let cls = el.className;
+            var n = el.id.split('-')[1];
+            if (!/photo-center/.test(cls)) {
+                return rsort(n);
+            }
             if (/photo-front/.test(cls)) {
                 cls = cls.replace("photo-front", "photo-back")
+                document.querySelector('#nav-' + n).className += ' i-back';//同时处理控制按钮
             } else {
                 cls = cls.replace("photo-back", "photo-front")
+                document.querySelector('#nav-' + n).className = document.querySelector('#nav-' + n).className.replace(/\s*i-back\s*/, ' ');
             }
             el.className = cls;
         }
@@ -187,9 +255,14 @@
             var nav = [];
 
             for (var i = 0; i < data.length; i++) {
-                var _html = template.replace('{{index}}', i + 1).replace('{{img}}', data[i].img).replace('{{caption}}', data[i].caption).replace('{{desc}}', data[i].desc);
+                var _html = template.replace('{{index}}', i + 1)
+                    .replace('{{img}}', data[i].img)
+                    .replace('{{caption}}', data[i].caption)
+                    .replace('{{desc}}', data[i].desc);
                 html.push(_html);
+                nav.push('<span id="nav-' + (i + 1) + '" onclick="turn(document.querySelector(\'#photo-' + (i + 1) + '\'))" class="i"></span>');
             }
+            html.push('<div class="nav">' + nav.join('') + '</div>');
             document.querySelector('#wrap').innerHTML = html.join('');
             rsort(random([1, data.length]));
         }
@@ -220,10 +293,10 @@
                 width: document.querySelector('.photo').clientWidth,
                 height: document.querySelector('.photo').clientHeight
             };
-          
-            range.left.x = [0 - photo.width , wrap.width / 2 - photo.width];
-            range.left.y = [0 - photo.height , wrap.height ];
-            range.right.x = [wrap.width / 2 , wrap.width];
+
+            range.left.x = [0 - photo.width, wrap.width / 2 - photo.width];
+            range.left.y = [0 - photo.height, wrap.height];
+            range.right.x = [wrap.width / 2, wrap.width];
             range.right.y = range.left.y;
 
             return range;
@@ -235,11 +308,24 @@
                 el.className = 'photo photo-front';
                 el.style.left = '';
                 el.style.top = '';
+                el.style['transform'] = el.style['-webkit-transform'] = 'scale(1.3)';
             });
             photo_center = photos.splice(n - 1, 1);//把photo_center从数组里删掉
             var photo_center = document.querySelector('#photo-' + n);
             photo_center.className += ' photo-center';
 
+            /*
+            圆环型海报展示方法
+             for (s in photos) {
+                var photo = photos[s];
+                var ang = random([0, 360])
+                var avg = ang * 2 * Math.PI / 360;
+                var ang = -ang;
+                photo.style['transform'] = 'translate(' + 500 * Math.sin(avg) + 'px,' + 500 * Math.cos(avg) + 'px) rotate(' + ang + 'deg) scale(1)';
+                // 500 为半径值;
+            }
+            */
+           
             // 把剩下的海报分为左右两部分
             var photos_left = photos.splice(0, Math.ceil(photos.length / 2));
             var photos_right = photos;
@@ -257,6 +343,12 @@
                 photo.style.top = random(ranges.right.y) + 'px';
                 photo.style['transform'] = photo.style['-webkit-transform'] = 'rotate(' + random([-150, 150]) + 'deg) scale(1)';
             }
+            // 控制按钮处理
+            var navs = document.querySelectorAll('.i');
+            for (var k = 0; k < navs.length; k++) {
+                navs[k].className = 'i';
+            }
+            document.querySelector('#nav-' + n).className += ' i-current';
         }
     </script>
 </body>
